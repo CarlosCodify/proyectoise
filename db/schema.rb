@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_21_150814) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_21_194246) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_graphql"
   enable_extension "pg_stat_statements"
@@ -189,7 +189,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_21_150814) do
     t.string "numero_cuenta", limit: 20
     t.string "tipo_moneda", limit: 50
     t.decimal "saldo", precision: 12, scale: 2
-    t.integer "titular_contacto"
+    t.integer "id_contacto"
     t.date "fecha_apertura"
     t.string "estado", limit: 1
     t.date "fecha_cierre"
@@ -465,7 +465,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_21_150814) do
   add_foreign_key "credito", "cxc", column: "id_cxc", name: "credito_id_cxc_fkey"
   add_foreign_key "credito", "personal", column: "id_personal", name: "credito_id_personal_fkey"
   add_foreign_key "cuenta_banco", "banco", column: "id_banco", name: "cuenta_banco_id_banco_fkey"
-  add_foreign_key "cuenta_banco", "contacto", column: "titular_contacto", name: "cuenta_banco_titular_contacto_fkey"
+  add_foreign_key "cuenta_banco", "contacto", column: "id_contacto", name: "cuenta_banco_titular_contacto_fkey"
   add_foreign_key "cuota", "credito", column: "id_credito", name: "cuota_id_credito_fkey"
   add_foreign_key "cxc", "cliente", column: "id_cliente", name: "cxc_id_cliente_fkey"
   add_foreign_key "cxc", "concepto_cxc", column: "id_concepto_cxc", name: "cxc_id_concepto_cxc_fkey"
