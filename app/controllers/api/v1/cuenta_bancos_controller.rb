@@ -4,9 +4,10 @@ class Api::V1::CuentaBancosController < ApplicationController
 
   # GET /api/v1/cuenta_bancos
   def index
-    @cuenta_bancos = @banco.cuenta_bancos
+    @cuenta_bancos = @banco.cuenta_bancos.includes(:banco, :contacto)
 
-    render json: @cuenta_bancos
+    render json: @cuenta_bancos.as_json(include: [{ banco: { only: %i[id nombre] } },
+                                                  { contacto: { only: %i[id nombre apellido_paterno apellido_materno] } }])
   end
 
   # GET /api/v1/cuenta_bancos/1
