@@ -5,27 +5,27 @@ class Api::V1::UsuariosController < ApplicationController
   def index
     @usuarios = Usuario.all
 
-    render json: @usuarios
+    render json: @usuarios.as_json(include: [{ contacto: { only: %i[id nombre apellido_materno apellido_paterno] } }])
   end
 
   # GET /api/v1/usuarios/1
   def show
-    render json: @usuario
+    render json: @usuario.as_json(include: [{ contacto: { only: %i[id nombre apellido_materno apellido_paterno] } }])
   end
 
   # POST /api/v1/usuarios
   def create
     @contacto=  Contacto.new(contacto_params)
     if @contacto.save
-      @contacto.reload
-
       @usuario = @contacto.usuarios.build(usuario_params)
   
       if @usuario.save
-        render json: @usuario, status: :created, location: @usuario
+        render json: @usuario.as_json(include: [{ contacto: { only: %i[id nombre apellido_materno apellido_paterno] } }]), status: :created
       else
         render json: @usuario.errors, status: :unprocessable_entity
       end
+    else
+      render json: @contacto.errors, status: :unprocessable_entity
     end
   end
 

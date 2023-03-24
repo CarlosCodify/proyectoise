@@ -18,7 +18,7 @@ class Api::V1::ContactosController < ApplicationController
     @contacto = Contacto.new(contacto_params)
 
     if @contacto.save
-      render json: @contacto, status: :created, location: @contacto
+      render json: @contacto, status: :created
     else
       render json: @contacto.errors, status: :unprocessable_entity
     end
@@ -46,7 +46,7 @@ class Api::V1::ContactosController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def contacto_params
-      params.require(:contacto).permit( :nombre, :apellido_paterno, :apellido_materno, :telefono, :direccion, :ci, :nit, :email, :genero)
+      params.require(:contacto).permit(:nombre, :apellido_paterno, :apellido_materno, :telefono, :direccion, :ci, :nit, :email, :genero)
     end
 end
 
