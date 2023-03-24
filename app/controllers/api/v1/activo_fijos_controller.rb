@@ -4,9 +4,10 @@ class Api::V1::ActivoFijosController < ApplicationController
 
   # GET /api/v1/sucursales/:sucursal_id/activo_fijos
   def index
-    @activo_fijos = @sucursal.activo_fijos
+    @activo_fijos = @sucursal.activo_fijos.includes(:tipo_activo_fijo, :sucursal)
 
-    render json: @activo_fijos
+    render json: @activo_fijos.as_json(include: [{ sucursal: { only: %i[id nombre direccion] } },
+                                                 { tipo_activo_fijo: { only: %i[id nombre] } }])
   end
 
   # GET /api/v1/activo_fijos/1
