@@ -10,6 +10,13 @@ class Api::V1::CuentaBancosController < ApplicationController
                                                   { contacto: { only: %i[id nombre apellido_paterno apellido_materno] } }])
   end
 
+  def index_all
+    @cuenta_bancos = CuentaBanco.all.includes(:banco, :contacto)
+
+    render json: @cuenta_bancos.as_json(include: [{ banco: { only: %i[id nombre] } },
+                                                  { contacto: { only: %i[id nombre apellido_paterno apellido_materno] } }])
+  end
+
   # GET /api/v1/cuenta_bancos/1
   def show
     render json: @cuenta_banco

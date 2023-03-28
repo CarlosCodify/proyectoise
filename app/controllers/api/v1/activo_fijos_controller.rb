@@ -10,6 +10,13 @@ class Api::V1::ActivoFijosController < ApplicationController
                                                  { tipo_activo_fijo: { only: %i[id nombre] } }])
   end
 
+  def index_all
+    @activo_fijos = ActivosFijos.all.includes(:tipo_activo_fijo, :sucursal)
+
+    render json: @activo_fijos.as_json(include: [{ sucursal: { only: %i[id nombre direccion] } },
+                                                 { tipo_activo_fijo: { only: %i[id nombre] } }])
+  end
+
   # GET /api/v1/activo_fijos/1
   def show
     render json: @activo_fijo
