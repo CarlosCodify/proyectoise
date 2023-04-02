@@ -3,9 +3,14 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
+      resources :proveedor, only: %i[index]
+      resources :cxp, only: %i[index]
+      resources :cxc, only: %i[index]
       resources :concepto_movimiento_bancos
       resources :usuarios
-      resources :contactos
+      resources :contactos do
+        get :clientes, on: :collection
+      end
       resources :sucursales do
         resources :activo_fijos, only: %i[index create]
       end
@@ -26,6 +31,8 @@ Rails.application.routes.draw do
       resources :movimiento_bancos, only: %i[show update destroy] do
         get :index_all, on: :collection
       end
+      get 'proveedor/:proveedor_id/find_cxp', to: 'cxp#find_cxp'
+      get 'clientes/:cliente_id/find_cxc', to: 'cxc#find_cxc'
     end
   end
 end

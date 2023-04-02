@@ -42,6 +42,13 @@ module Api
         @contacto.destroy
       end
 
+      def clientes
+        @clientes = Cliente.all.includes(:contacto)
+
+        render json: @clientes.as_json(include: [{ contacto: { only: %i[id nombre apellido_paterno
+                                                                        apellido_materno] } }])
+      end
+
       private
 
       # Use callbacks to share common setup or constraints between actions.
