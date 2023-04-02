@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class ActivoFijo < ApplicationRecord
-	self.table_name = "activo_fijo"
+  self.table_name = 'activo_fijo'
 
   belongs_to :sucursal, foreign_key: 'id_sucursal', class_name: 'Sucursal'
   belongs_to :tipo_activo_fijo, foreign_key: 'id_tipo_activo_fijo', class_name: 'TipoActivoFijo'

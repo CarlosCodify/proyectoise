@@ -1,0 +1,33 @@
+Metrics/BlockLength:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 150
+  Exclude:
+    - 'bin/bundle'
+
+Metrics/MethodLength:
+  Max: 75
+
+Metrics/ClassLength:
+  Max: 550
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Max: 25
+
+Metrics/CyclomaticComplexity:
+  Max: 25
+
+Style/OpenStructUse:
+  Enabled: false
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - db/**
