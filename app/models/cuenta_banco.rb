@@ -5,6 +5,7 @@ class CuentaBanco < ApplicationRecord
 
   belongs_to :contacto, foreign_key: 'id_contacto', class_name: 'Contacto'
   belongs_to :banco, foreign_key: 'id_banco', class_name: 'Banco'
+  has_many :movimiento_bancos, foreign_key: 'id_cuenta_banco', class_name: 'MovimientoBanco'
 
   validates :numero_cuenta, presence: true, uniqueness: true
   validates :tipo_moneda, presence: true
