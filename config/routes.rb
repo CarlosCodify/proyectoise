@@ -4,7 +4,7 @@ Rails.application.routes.draw do
       resources :usuarios
       resources :contactos
       resources :sucursales do
-        resources :activo_fijos, shallow: true
+        resources :activo_fijos, only: %i[index create]
       end
       resources :bancos do
         resources :cuenta_bancos, only: %i[index create]
@@ -12,7 +12,8 @@ Rails.application.routes.draw do
       resources :cuenta_bancos, only: %i[show update destroy] do
         get :index_all, on: :collection
       end
-      resources :tipo_activo_fijos do
+      resources :tipo_activo_fijos
+      resources :activo_fijos, only: %i[show update destroy] do
         get :index_all, on: :collection
       end
     end
