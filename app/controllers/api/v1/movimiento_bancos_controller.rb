@@ -10,19 +10,27 @@ module Api
       def index
         @movimiento_bancos = @cuenta_banco.movimiento_bancos
                                           .select("movimiento_banco.*, CASE WHEN retiro.id IS NOT NULL THEN 'Retiro' ELSE 'Depósito' END AS tipo")
-                                          .left_joins(:retiro, :deposito)
+                                          .left_joins(:retiro, :deposito).includes(:concepto_movimiento_banco, cuenta_banco: :banco)
+                                          
 
-        render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } }])
+        render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } },
+                                                          {
+                                                            cuenta_banco: { include: { banco: { only: %i[id nombre] } } }
+                                                          }
+                                                         ])
       end
 
       def index_all
         @movimiento_bancos = MovimientoBanco
                              .select("movimiento_banco.*, CASE WHEN retiro.id IS NOT NULL THEN 'Retiro' ELSE 'Depósito' END AS tipo")
-                             .left_joins(:retiro, :deposito)
+                             .left_joins(:retiro, :deposito).includes(:concepto_movimiento_banco, cuenta_banco: :banco)
 
-        render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } }])
+        render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } },
+                                                          {
+                                                            cuenta_banco: { include: { banco: { only: %i[id nombre] } } }
+                                                          }
+                                                         ])
       end
-
       # GET /api/v1/movimiento_bancos/1
       def show
         render json: @movimiento_banco
@@ -57,15 +65,6 @@ module Api
           retiro.save
 
           render json: @movimiento_banco, status: :created
-        else
-          render json: @movimiento_banco.errors, status: :unprocessable_entity
-        end
-      end
-
-      # PATCH/PUT /api/v1/movimiento_bancos/1
-      def update
-        if @movimiento_banco.update(movimiento_banco_params)
-          render json: @movimiento_banco
         else
           render json: @movimiento_banco.errors, status: :unprocessable_entity
         end
