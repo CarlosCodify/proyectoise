@@ -46,6 +46,7 @@ Rails.application.routes.draw do
       get 'movimientos_caja', to: 'cajas#movimientos_caja'
       get 'cajas/:caja_id/find_movimientos_caja', to: 'cajas#find_movimientos_caja'
       get 'cajas/:caja_id', to: 'cajas#show'
+      get 'cajas', to: 'cajas#index'
     end
   end
 end

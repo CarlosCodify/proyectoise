@@ -6,6 +6,11 @@ module Api
       before_action :set_caja, only: %i[cierre find_movimientos_caja show]
       before_action :set_sucursal, only: %i[create]
 
+      def index
+        @cajas_activas = Caja.where(estado: 'A')
+
+        render json: @cajas_activas
+      end
       def create
         @caja = @sucursal.cajas.build(caja_params)
         @caja.fecha_apertura = DateTime.now
