@@ -3,7 +3,7 @@
 module Api
   module V1
     class CajasController < ApplicationController
-      before_action :set_caja, only: %i[cierre find_movimientos_caja]
+      before_action :set_caja, only: %i[cierre find_movimientos_caja show]
       before_action :set_sucursal, only: %i[create]
 
       def create
@@ -16,6 +16,10 @@ module Api
         else
           render json: @caja.errors, status: :unprocessable_entity
         end
+      end
+
+      def show
+        render json: @caja
       end
 
       def cierre
@@ -166,8 +170,9 @@ module Api
 
       def find_movimientos_caja
         @movimiento_cajas = @caja.movimiento_cajas
-                                 .select("movimiento_caja.*, CASE WHEN ingreso_caja.id IS NOT NULL THEN 'Ingreso' ELSE 'Egreso' END AS tipo")
-                                 .left_joins(:ingreso_caja, :egreso_caja).includes(:concepto_movimiento_caja, :caja)
+                                                  .select("movimiento_caja.*, CASE WHEN ingreso_caja.id IS NOT NULL THEN 'Ingreso' ELSE 'Egreso' END AS tipo")
+                                                  .left_outer_joins(:ingreso_caja, :egreso_caja)
+                                                  .includes(:concepto_movimiento_caja, :caja)
 
         result = @movimiento_cajas.as_json(include: [{ concepto_movimiento_caja: { only: %i[nombre] } },
                                                      {
@@ -183,14 +188,17 @@ module Api
             total_egresos += movimiento_caja.monto
           end
         end
-        render json: [result,
-                      { estado_actual_caja: {
-                        saldo_inicial: @caja.saldo_inicial,
-                        saldo_actual: @caja.saldo_actual,
-                        total_ingresos: total_ingresos,
-                        total_egresos: total_egresos,
-                        estado: @caja.estado == 'A' ? 'Activa' : 'Cerrada'
-                      } }]
+
+        render json: {
+          result: result,
+          estado_actual_caja: {
+            saldo_inicial: @caja.saldo_inicial,
+            saldo_actual: @caja.saldo_actual,
+            total_ingresos: total_ingresos,
+            total_egresos: total_egresos,
+            estado: @caja.estado == 'A' ? 'Activa' : 'Cerrada',
+          }
+        }
       end
 
       private
