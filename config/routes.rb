@@ -43,6 +43,8 @@ Rails.application.routes.draw do
       post 'movimiento_caja/ingreso', to: 'cajas#ingreso'
       post 'movimiento_caja/egreso', to: 'cajas#egreso'
       post 'cxp/:cxp_id/egreso_cxp', to: 'cajas#egreso_cxp'
+      get 'movimientos_caja', to: 'cajas#movimientos_caja'
+      get 'cajas/:caja_id/find_movimientos_caja', to: 'cajas#find_movimientos_caja'
     end
   end
 end

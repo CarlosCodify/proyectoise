@@ -3,7 +3,7 @@
 module Api
   module V1
     class CajasController < ApplicationController
-      before_action :set_caja, only: %i[cierre]
+      before_action :set_caja, only: %i[cierre find_movimientos_caja]
       before_action :set_sucursal, only: %i[create]
 
       def create
@@ -151,6 +151,46 @@ module Api
             render json: movimiento_caja.errors, status: :unprocessable_entity
           end
         end
+      end
+
+      def movimientos_caja
+        @movimiento_cajas = MovimientoCaja
+                            .select("movimiento_caja.*, CASE WHEN ingreso_caja.id IS NOT NULL THEN 'Ingreso' ELSE 'Egreso' END AS tipo")
+                            .left_joins(:ingreso_caja, :egreso_caja).includes(:concepto_movimiento_caja, :caja)
+
+        render json: @movimiento_cajas.as_json(include: [{ concepto_movimiento_caja: { only: %i[nombre] } },
+                                                         {
+                                                           caja: { only: %i[id nombre estado] }
+                                                         }])
+      end
+
+      def find_movimientos_caja
+        @movimiento_cajas = @caja.movimiento_cajas
+                                 .select("movimiento_caja.*, CASE WHEN ingreso_caja.id IS NOT NULL THEN 'Ingreso' ELSE 'Egreso' END AS tipo")
+                                 .left_joins(:ingreso_caja, :egreso_caja).includes(:concepto_movimiento_caja, :caja)
+
+        result = @movimiento_cajas.as_json(include: [{ concepto_movimiento_caja: { only: %i[nombre] } },
+                                                     {
+                                                       caja: { only: %i[id nombre estado] }
+                                                     }])
+        total_ingresos = 0
+        total_egresos = 0
+
+        @movimiento_cajas.each do |movimiento_caja|
+          if IngresoCaja.find_by(id_movimiento_caja: movimiento_caja.id).present?
+            total_ingresos += movimiento_caja.monto
+          else
+            total_egresos += movimiento_caja.monto
+          end
+        end
+        render json: [result,
+                      { estado_actual_caja: {
+                        saldo_inicial: @caja.saldo_inicial,
+                        saldo_actual: @caja.saldo_actual,
+                        total_ingresos: total_ingresos,
+                        total_egresos: total_egresos,
+                        estado: @caja.estado == 'A' ? 'Activa' : 'Cerrada'
+                      } }]
       end
 
       private

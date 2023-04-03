@@ -6,6 +6,7 @@ class Caja < ApplicationRecord
   has_many :cierre_cajas, foreign_key: 'id_caja', class_name: 'CierreCaja'
   belongs_to :sucursal, foreign_key: 'id_sucursal', class_name: 'Sucursal'
   belongs_to :usuario, foreign_key: 'id_usuario', class_name: 'Usuario'
+  has_many :movimiento_cajas, foreign_key: 'id_caja', class_name: 'MovimientoCaja'
 
   validates :nombre, presence: true, length: { maximum: 255 }
   validates :saldo_inicial, presence: true, numericality: { greater_than_or_equal_to: 0 }
