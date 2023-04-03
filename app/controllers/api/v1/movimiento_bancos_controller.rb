@@ -11,13 +11,11 @@ module Api
         @movimiento_bancos = @cuenta_banco.movimiento_bancos
                                           .select("movimiento_banco.*, CASE WHEN retiro.id IS NOT NULL THEN 'Retiro' ELSE 'Depósito' END AS tipo")
                                           .left_joins(:retiro, :deposito).includes(:concepto_movimiento_banco, cuenta_banco: :banco)
-                                          
 
         render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } },
                                                           {
                                                             cuenta_banco: { include: { banco: { only: %i[id nombre] } } }
-                                                          }
-                                                         ])
+                                                          }])
       end
 
       def index_all
@@ -28,9 +26,9 @@ module Api
         render json: @movimiento_bancos.as_json(include: [{ concepto_movimiento_banco: { only: %i[nombre] } },
                                                           {
                                                             cuenta_banco: { include: { banco: { only: %i[id nombre] } } }
-                                                          }
-                                                         ])
+                                                          }])
       end
+
       # GET /api/v1/movimiento_bancos/1
       def show
         render json: @movimiento_banco
@@ -70,7 +68,8 @@ module Api
             render json: @movimiento_banco.errors, status: :unprocessable_entity
           end
         else
-          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}."}, status: :unprocessable_entity
+          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}." },
+                 status: :unprocessable_entity
         end
       end
 

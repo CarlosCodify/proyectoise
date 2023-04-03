@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       end
       resources :sucursales do
         resources :activo_fijos, only: %i[index create]
+        resources :cajas, only: %i[create]
       end
       resources :bancos do
         resources :cuenta_bancos, only: %i[index create]
@@ -36,6 +37,12 @@ Rails.application.routes.draw do
       get 'clientes/:cliente_id/find_cxc', to: 'cxc#find_cxc'
       get 'clientes/:cliente_id/creditos', to: 'creditos#index'
       get 'clientes/:cliente_id/cuotas', to: 'cuotas#index'
+      post 'cajas/:caja_id/cierre', to: 'cajas#cierre'
+      post 'cxc/:cxc_id/ingreso_cxc', to: 'cajas#ingreso_cxc'
+      post 'cuota/:cuota_id/ingreso_cuota', to: 'cajas#ingreso_cuota'
+      post 'movimiento_caja/ingreso', to: 'cajas#ingreso'
+      post 'movimiento_caja/egreso', to: 'cajas#egreso'
+      post 'cxp/:cxp_id/egreso_cxp', to: 'cajas#egreso_cxp'
     end
   end
 end

@@ -1,19 +1,26 @@
-class Api::V1::CreditosController < ApplicationController
-  before_action :set_credito, only: %i[ show update destroy ]
+# frozen_string_literal: true
 
-  # GET /api/v1/creditos
-  def index
-    @cliente = Cliente.find(params[:cliente_id])
-    @creditos = @cliente.creditos.includes(:contacto)
+module Api
+  module V1
+    class CreditosController < ApplicationController
+      before_action :set_credito, only: %i[show update destroy]
 
-    render json: @creditos.as_json(include: [ {cliente: { only: %i[id credito_limite]}},
-                                              { contacto: { only: %i[nombre apellido_paterno
-                                                                     apellido_materno] } }])
-  end
+      # GET /api/v1/creditos
+      def index
+        @cliente = Cliente.find(params[:cliente_id])
+        @creditos = @cliente.creditos.includes(:contacto)
 
-  private
-  # Use callbacks to share common setup or constraints between actions.
-  def set_credito
-    @credito = Credito.find(params[:id])
+        render json: @creditos.as_json(include: [{ cliente: { only: %i[id credito_limite] } },
+                                                 { contacto: { only: %i[nombre apellido_paterno
+                                                                        apellido_materno] } }])
+      end
+
+      private
+
+      # Use callbacks to share common setup or constraints between actions.
+      def set_credito
+        @credito = Credito.find(params[:id])
+      end
+    end
   end
 end

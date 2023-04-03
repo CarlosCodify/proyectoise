@@ -4,5 +4,5 @@ class Cxp < ApplicationRecord
   self.table_name = 'cxp'
 
   belongs_to :concepto_cxp, foreign_key: 'id_concepto_cxp', class_name: 'ConceptoCxp'
-  belongs_to :proveedor
+  belongs_to :proveedor, foreign_key: 'id_proveedor', class_name: 'Proveedor'
 end
