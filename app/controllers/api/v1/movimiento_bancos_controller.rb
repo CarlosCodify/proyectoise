@@ -58,15 +58,19 @@ module Api
         @movimiento_banco = @cuenta_banco.movimiento_bancos.build(movimiento_banco_params)
         @movimiento_banco.fecha ||= DateTime.now
 
-        if @movimiento_banco.save
-          saldo = @movimiento_banco.cuenta_banco.saldo
-          @movimiento_banco.cuenta_banco.update(saldo: saldo - @movimiento_banco.monto)
-          retiro = @movimiento_banco.retiro.build
-          retiro.save
+        if @cuenta_banco.saldo >= @movimiento_banco.monto
+          if @movimiento_banco.save
+            saldo = @movimiento_banco.cuenta_banco.saldo
+            @movimiento_banco.cuenta_banco.update(saldo: saldo - @movimiento_banco.monto)
+            retiro = @movimiento_banco.retiro.build
+            retiro.save
 
-          render json: @movimiento_banco, status: :created
+            render json: @movimiento_banco, status: :created
+          else
+            render json: @movimiento_banco.errors, status: :unprocessable_entity
+          end
         else
-          render json: @movimiento_banco.errors, status: :unprocessable_entity
+          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}."}, status: :unprocessable_entity
         end
       end
 
