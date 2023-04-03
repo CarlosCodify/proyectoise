@@ -69,7 +69,7 @@ module Api
           end
         else
           render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}.",
-                         status: "error"}
+                         status: 'error' }
         end
       end
 

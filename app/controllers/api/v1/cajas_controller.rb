@@ -45,108 +45,113 @@ module Api
       end
 
       def ingreso_cxc
-				ActiveRecord::Base.transaction do
-					cxc = Cxc.find(params[:cxc_id])
-					movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
-					movimiento_caja.fecha = DateTime.now
-					movimiento_caja.id_contacto = cxc.id_cliente
+        ActiveRecord::Base.transaction do
+          cxc = Cxc.find(params[:cxc_id])
+          movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
+          movimiento_caja.fecha = DateTime.now
+          movimiento_caja.id_contacto = cxc.id_cliente
 
-					if movimiento_caja.save
-						cxc.update(monto_pagado: movimiento_caja.monto, monto_deuda_actual: cxc.monto_deuda_actual - movimiento_caja.monto)
-						cxc.update(estado: 'C') if cxc.monto_deuda_actual == 0
-						ingreso_caja = IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
-						IngresoCuentasCobrar.create(cxc: cxc, ingreso_caja: ingreso_caja)
-						caja = movimiento_caja.caja
-						caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
-						caja.save
+          if movimiento_caja.save
+            cxc.update(monto_pagado: movimiento_caja.monto, monto_deuda_actual: cxc.monto_deuda_actual - movimiento_caja.monto)
+            cxc.update(estado: 'C') if cxc.monto_deuda_actual.zero?
+            ingreso_caja = IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
+            IngresoCuentasCobrar.create(cxc: cxc, ingreso_caja: ingreso_caja)
+            caja = movimiento_caja.caja
+            caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
+            caja.save
 
-						render json: movimiento_caja, status: :created
-					else
-						render json: movimiento_caja.errors, status: :unprocessable_entity
-					end
-				end
-			end
+            render json: movimiento_caja, status: :created
+          else
+            render json: movimiento_caja.errors, status: :unprocessable_entity
+          end
+        end
+      end
 
-			def ingreso_cuota
-				ActiveRecord::Base.transaction do
-					cuota = Cuota.find(params[:cuota_id])
-					movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
-					movimiento_caja.fecha = DateTime.now
-					movimiento_caja.monto = cuota.total
-					movimiento_caja.id_contacto = cuota.contacto.id
+      def ingreso_cuota
+        ActiveRecord::Base.transaction do
+          cuota = Cuota.find(params[:cuota_id])
+          movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
+          movimiento_caja.fecha = DateTime.now
+          movimiento_caja.monto = cuota.total
+          movimiento_caja.id_contacto = cuota.contacto.id
 
-					if movimiento_caja.save
-						cuota.update(estado: 'C')
-						ingreso_caja = IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
-						IngresoCuotas.create(id_cuota: cuota.id, ingreso_caja: ingreso_caja)
-						caja = movimiento_caja.caja
-						caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
-						caja.save
+          if movimiento_caja.save
+            cuota.update(estado: 'C')
+            ingreso_caja = IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
+            IngresoCuotas.create(id_cuota: cuota.id, ingreso_caja: ingreso_caja)
+            caja = movimiento_caja.caja
+            caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
+            caja.save
 
-						render json: movimiento_caja, status: :created
-					else
-						render json: movimiento_caja.errors, status: :unprocessable_entity
-					end
-				end
-			end
+            render json: movimiento_caja, status: :created
+          else
+            render json: movimiento_caja.errors, status: :unprocessable_entity
+          end
+        end
+      end
 
-			def ingreso
-				ActiveRecord::Base.transaction do
-					movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
-					movimiento_caja.fecha = DateTime.now
+      def ingreso
+        ActiveRecord::Base.transaction do
+          movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
+          movimiento_caja.fecha = DateTime.now
 
-					if movimiento_caja.save
-						ingreso_caja = IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
-						caja = movimiento_caja.caja
-						caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
-						caja.save
-						render json: movimiento_caja, status: :created
-					else
-						render json: movimiento_caja.errors, status: :unprocessable_entity
-					end
-				end
-			end
+          if movimiento_caja.save
+            IngresoCaja.create(id_movimiento_caja: movimiento_caja.id)
+            caja = movimiento_caja.caja
+            caja.saldo_actual = caja.saldo_actual + movimiento_caja.monto
+            caja.save
+            render json: movimiento_caja, status: :created
+          else
+            render json: movimiento_caja.errors, status: :unprocessable_entity
+          end
+        end
+      end
 
-			def egreso
-				ActiveRecord::Base.transaction do
-					movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
-					movimiento_caja.fecha = DateTime.now
-					caja = movimiento_caja.caja
-					return render json: { message: 'No se puede realizar un egreso de un monto mayor al saldo de la caja.' } if caja.saldo_actual < movimiento_caja.monto
-					if movimiento_caja.save
-						ingreso_caja = EgresoCaja.create(id_movimiento_caja: movimiento_caja.id)
-						caja.saldo_actual = caja.saldo_actual - movimiento_caja.monto
-						caja.save
+      def egreso
+        ActiveRecord::Base.transaction do
+          movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
+          movimiento_caja.fecha = DateTime.now
+          caja = movimiento_caja.caja
+          if caja.saldo_actual < movimiento_caja.monto
+            return render json: { message: 'No se puede realizar un egreso de un monto mayor al saldo de la caja.' }
+          end
 
-						render json: movimiento_caja, status: :created
-					else
-						render json: movimiento_caja.errors, status: :unprocessable_entity
-					end
-				end
-			end
+          if movimiento_caja.save
+            EgresoCaja.create(id_movimiento_caja: movimiento_caja.id)
+            caja.saldo_actual = caja.saldo_actual - movimiento_caja.monto
+            caja.save
 
-			def egreso_cxp
-				ActiveRecord::Base.transaction do
-					cxp = Cxp.find(params[:cxp_id])
-					movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
-					movimiento_caja.fecha = DateTime.now
-					caja = movimiento_caja.caja
+            render json: movimiento_caja, status: :created
+          else
+            render json: movimiento_caja.errors, status: :unprocessable_entity
+          end
+        end
+      end
 
-					return render json: { message: 'No se puede realizar un egreso de un monto mayor al saldo de la caja.' } if caja.saldo_actual < movimiento_caja.monto
-					
-					if movimiento_caja.save
-						cxp.update(monto_pagado: movimiento_caja.monto, deuda_actual: cxp.deuda_actual - movimiento_caja.monto)
-						cxp.update(estado: 'C') if cxp.deuda_actual == 0
-						egreso_caja = EgresoCaja.create(id_movimiento_caja: movimiento_caja.id)
-						EgresoCuentasPagar.create(id_cxp: cxp.id, egreso_caja: egreso_caja)
-						caja.saldo_actual = caja.saldo_actual - movimiento_caja.monto
-						caja.save
-						render json: movimiento_caja, status: :created
-					else
-						render json: movimiento_caja.errors, status: :unprocessable_entity
-					end
-				end
-			end
+      def egreso_cxp
+        ActiveRecord::Base.transaction do
+          cxp = Cxp.find(params[:cxp_id])
+          movimiento_caja = MovimientoCaja.new(movimiento_caja_params)
+          movimiento_caja.fecha = DateTime.now
+          caja = movimiento_caja.caja
+
+          if caja.saldo_actual < movimiento_caja.monto
+            return render json: { message: 'No se puede realizar un egreso de un monto mayor al saldo de la caja.' }
+          end
+
+          if movimiento_caja.save
+            cxp.update(monto_pagado: movimiento_caja.monto, deuda_actual: cxp.deuda_actual - movimiento_caja.monto)
+            cxp.update(estado: 'C') if cxp.deuda_actual.zero?
+            egreso_caja = EgresoCaja.create(id_movimiento_caja: movimiento_caja.id)
+            EgresoCuentasPagar.create(id_cxp: cxp.id, egreso_caja: egreso_caja)
+            caja.saldo_actual = caja.saldo_actual - movimiento_caja.monto
+            caja.save
+            render json: movimiento_caja, status: :created
+          else
+            render json: movimiento_caja.errors, status: :unprocessable_entity
+          end
+        end
+      end
 
       private
 
@@ -168,9 +173,9 @@ module Api
         params.require(:cierre_caja).permit(:monto_efectivo, :monto_sistema, :observaciones, :id_usuario)
       end
 
-			def movimiento_caja_params
-				params.require(:movimiento_caja).permit(:descripcion, :id_concepto_movimiento_caja, :monto, :id_caja, :id_contacto)
-			end
+      def movimiento_caja_params
+        params.require(:movimiento_caja).permit(:descripcion, :id_concepto_movimiento_caja, :monto, :id_caja, :id_contacto)
+      end
     end
   end
 end
