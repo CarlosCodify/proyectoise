@@ -11,6 +11,7 @@ module Api
 
         render json: @cajas_activas
       end
+
       def create
         @caja = @sucursal.cajas.build(caja_params)
         @caja.fecha_apertura = DateTime.now
