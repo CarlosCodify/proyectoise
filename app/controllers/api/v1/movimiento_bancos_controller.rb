@@ -68,8 +68,8 @@ module Api
             render json: @movimiento_banco.errors, status: :unprocessable_entity
           end
         else
-          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}." },
-                 status: :unprocessable_entity
+          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}.",
+                         status: "error"}
         end
       end
 
