@@ -6,4 +6,6 @@ class Cliente < ApplicationRecord
   belongs_to :contacto, foreign_key: 'id', class_name: 'Contacto'
   has_many :cxcs, foreign_key: 'id_cliente', class_name: 'Cxc'
   has_many :cxps, foreign_key: 'id_cliente', class_name: 'Cxc'
+  has_many :creditos, through: :cxcs
+  has_many :cuotas, through: :creditos
 end

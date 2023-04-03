@@ -31,8 +31,11 @@ Rails.application.routes.draw do
       resources :movimiento_bancos, only: %i[show update destroy] do
         get :index_all, on: :collection
       end
+      get 'clientes/:cliente_id', to: 'contactos#show_cliente'
       get 'proveedor/:proveedor_id/find_cxp', to: 'cxp#find_cxp'
       get 'clientes/:cliente_id/find_cxc', to: 'cxc#find_cxc'
+      get 'clientes/:cliente_id/creditos', to: 'creditos#index'
+      get 'clientes/:cliente_id/cuotas', to: 'cuotas#index'
     end
   end
 end

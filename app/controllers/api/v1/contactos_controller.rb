@@ -49,6 +49,13 @@ module Api
                                                                         apellido_materno] } }])
       end
 
+      def show_cliente
+        @cliente = Cliente.find(params[:cliente_id])
+
+        render json: @cliente.as_json(include: [{ contacto: { only: %i[id nombre apellido_paterno
+                                                                       apellido_materno] } }])
+      end
+
       private
 
       # Use callbacks to share common setup or constraints between actions.
