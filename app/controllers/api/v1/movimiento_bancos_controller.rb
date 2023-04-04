@@ -36,40 +36,44 @@ module Api
 
       # POST /api/v1/movimiento_bancos
       def create_deposit
-        @movimiento_banco = @cuenta_banco.movimiento_bancos.build(movimiento_banco_params)
-        @movimiento_banco.fecha ||= DateTime.now
+        ActiveRecord::Base.transaction do
+          @movimiento_banco = @cuenta_banco.movimiento_bancos.build(movimiento_banco_params)
+          @movimiento_banco.fecha ||= DateTime.now
 
-        if @movimiento_banco.save
-          saldo = @movimiento_banco.cuenta_banco.saldo
-          @movimiento_banco.cuenta_banco.update(saldo: saldo + @movimiento_banco.monto)
-          deposito = @movimiento_banco.deposito.build
-          deposito.save
-
-          render json: @movimiento_banco, status: :created
-        else
-          render json: @movimiento_banco.errors, status: :unprocessable_entity
-        end
-      end
-
-      # POST /api/v1/movimiento_bancos
-      def create_withdrawal
-        @movimiento_banco = @cuenta_banco.movimiento_bancos.build(movimiento_banco_params)
-        @movimiento_banco.fecha ||= DateTime.now
-
-        if @cuenta_banco.saldo >= @movimiento_banco.monto
           if @movimiento_banco.save
             saldo = @movimiento_banco.cuenta_banco.saldo
-            @movimiento_banco.cuenta_banco.update(saldo: saldo - @movimiento_banco.monto)
-            retiro = @movimiento_banco.retiro.build
-            retiro.save
+            @movimiento_banco.cuenta_banco.update(saldo: saldo + @movimiento_banco.monto)
+            deposito = @movimiento_banco.deposito.build
+            deposito.save
 
             render json: @movimiento_banco, status: :created
           else
             render json: @movimiento_banco.errors, status: :unprocessable_entity
           end
-        else
-          render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}.",
-                         status: 'error' }
+        end
+      end
+
+      # POST /api/v1/movimiento_bancos
+      def create_withdrawal
+        ActiveRecord::Base.transaction do
+          @movimiento_banco = @cuenta_banco.movimiento_bancos.build(movimiento_banco_params)
+          @movimiento_banco.fecha ||= DateTime.now
+
+          if @cuenta_banco.saldo >= @movimiento_banco.monto
+            if @movimiento_banco.save
+              saldo = @movimiento_banco.cuenta_banco.saldo
+              @movimiento_banco.cuenta_banco.update(saldo: saldo - @movimiento_banco.monto)
+              retiro = @movimiento_banco.retiro.build
+              retiro.save
+
+              render json: @movimiento_banco, status: :created
+            else
+              render json: @movimiento_banco.errors, status: :unprocessable_entity
+            end
+          else
+            render json: { message: "No se puede retirar un monto mayor al saldo actual de la cuenta. El saldo actual de la cuenta es de #{@cuenta_banco.saldo}.",
+                          status: 'error' }
+          end
         end
       end
 
